@@ -237,7 +237,7 @@ export default function HomePage() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 sm:mb-6 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] tracking-tight leading-tight">
-              CEDRIC GUERRERO
+              CEDRIC GUERRERO 🚀
             </h1>
             {/* Desktop: GlassTag positioned over "ERO" */}
             <div className="hidden md:block">
