@@ -1,0 +1,286 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import Link from "next/link";
+
+// import { GlowingEffect } from "./_components/ui/glowing-effect";
+import dynamic from "next/dynamic";
+import ContactForm from "./_components/ContactForm";
+
+// const GlassTag = dynamic(() => import("./_components/GlassTag"), { ssr: false });
+
+export default function HomePage() {
+  const [counter, setCounter] = useState(0);
+
+  const { ref: heroRef, inView: heroInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+  const { ref: testimonialRef, inView: testimonialInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+  const { ref: servicesRef, inView: servicesInView } = useInView({ triggerOnce: true, threshold: 0.2 });
+
+  // User-provided video files
+  const videoSources = [
+    "/port_vids/bam.mp4",
+    "/port_vids/bri.mp4",
+    "/port_vids/cole 2.mp4",
+    "/port_vids/ctcs.mp4",
+    "/port_vids/davee.mp4",
+    "/port_vids/jlewi.mp4",
+    "/port_vids/loo.mp4",
+    "/port_vids/mattyb.mp4",
+    "/port_vids/MIKE.mp4",
+    "/port_vids/nave.mp4",
+    "/port_vids/PRESTON.mp4",
+    "/port_vids/rush.mp4",
+    "/port_vids/sam.mp4",
+    "/port_vids/stove.mp4",
+    "/port_vids/taping.mp4",
+    "/port_vids/woah.mp4",
+  ];
+
+  // Helper: fallback poster for videos
+  const fallbackPoster = "/placeholder-avatar.png";
+
+  const clientData = Array.from({ length: 10 }, (_, i) => ({
+    img: `https://placehold.co/100x100?text=Client+${i + 1}`,
+    url: "https://youtube.com",
+  }));
+
+  useEffect(() => {
+    let current = 0;
+    const end = 230;
+    const increment = end / 100;
+
+    const counter = setInterval(() => {
+      current += increment;
+      if (current >= end) {
+        clearInterval(counter);
+        setCounter(end);
+      } else {
+        setCounter(Math.floor(current));
+      }
+    }, 20);
+
+    return () => clearInterval(counter);
+  }, []);
+
+  return (
+    <>
+      {/* HERO SECTION */}
+      <section ref={heroRef} className="relative w-full h-screen bg-black">
+        {/* Fallback Background Gradient - Renders Instantly */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
+        
+        {/* Video Wall with Fade-in */}
+        <div className="absolute inset-0 overflow-hidden video-grid">
+          <motion.div 
+            className="infinite-video-wall-wrapper h-[200%] w-full animate-video-scroll"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+          >
+            {[0, 1].map((dup) => (
+              <div key={dup} className="infinite-video-wall grid grid-cols-4 gap-x-2 gap-y-1 w-full auto-rows-fr">
+                {videoSources.map((src, i) => (
+                  <div key={i + dup * videoSources.length} className="rounded-xl overflow-hidden shadow-md bg-white/5 border border-white/10 aspect-video">
+                    <video
+                      src={src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="none"
+                      className="w-full h-full object-cover"
+                      poster={fallbackPoster}
+                      onError={e => { e.currentTarget.poster = fallbackPoster; }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </motion.div>
+        </div>
+        
+        {/* Bottom gradient fade to black */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent z-15" />
+        
+        {/* Overlay - Renders Instantly */}
+        <div className="absolute inset-0 bg-black/80 z-20" />
+        {/* Hero Content */}
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-4">
+          <h1 className="hero-text text-6xl md:text-8xl font-bold mb-6 tracking-tight inline-block relative">
+            {/* Glassmorphism Tag (Desktop Only) */}
+            {/* Temporarily disabled */}
+            CEDRIC GUERRERO
+          </h1>
+          <p className="text-2xl md:text-4xl mt-0 mb-2 md:mb-3 pt-0 md:pt-1">
+            {counter}M+
+            <span className="text-purple-400 ml-2 inline-flex items-center">
+              views generated
+            </span>
+          </p>
+          <div className="cta-container mt-6 flex gap-4">
+            {/* CTA 1 */}
+            <Link
+              href="/contact"
+              className="px-6 py-3 rounded-xl bg-white/10 backdrop-blur text-white font-semibold border border-white/20 transition-all duration-200 hover:bg-purple-600 hover:text-white"
+            >
+              Contact Me
+            </Link>
+            {/* CTA 2 */}
+            <Link
+              href="/work"
+              className="px-6 py-3 rounded-xl bg-white/10 backdrop-blur text-white font-semibold border border-white/20 transition-all duration-200 hover:bg-white hover:text-black"
+            >
+              See My Work
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS SECTION */}
+      <section ref={testimonialRef} className="relative z-30 py-20 px-6 bg-black text-center">
+        <motion.h2 
+          className="text-4xl font-bold mb-12" 
+          initial={{ opacity: 0, y: 30 }} 
+          animate={testimonialInView ? { opacity: 1, y: 0 } : {}} 
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          Client Testimonials
+        </motion.h2>
+        <motion.div 
+          className="flex flex-col md:flex-row items-center justify-center gap-8 max-w-6xl mx-auto" 
+          initial={{ opacity: 0, y: 40 }} 
+          animate={testimonialInView ? { opacity: 1, y: 0 } : {}} 
+          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+        >
+          <motion.div whileHover={{ scale: 1.03 }} transition={{ duration: 0.15 }} className="w-full md:w-1/4 bg-white/5 border border-white/20 backdrop-blur-lg p-6 rounded-xl transition-all duration-200">
+            <p className="text-xl font-medium">
+              "Extremely professional and fast. Would recommend to anyone looking to grow their content."
+            </p>
+            <span className="block mt-4 text-purple-400 font-semibold">– Client 1</span>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.03 }} transition={{ duration: 0.15 }} className="w-full md:w-2/4 bg-white/5 border border-white/20 backdrop-blur-lg p-6 rounded-xl transition-all duration-200">
+            <video src="/videos/cole-testimonial.mp4" controls preload="metadata" className="w-full h-72 md:h-96 rounded-lg" />
+            <span className="block mt-4 text-purple-400 font-semibold">– Cole the Cornstar</span>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.03 }} transition={{ duration: 0.15 }} className="w-full md:w-1/4 bg-white/5 border border-white/20 backdrop-blur-lg p-6 rounded-xl transition-all duration-200">
+            <p className="text-xl font-medium">
+              "Cedric took our videos to the next level. Killer instincts for editing what works."
+            </p>
+            <span className="block mt-4 text-purple-400 font-semibold">– Client 2</span>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* CLIENT LOGO CAROUSEL */}
+      <section className="relative z-30 py-20 bg-black">
+        <motion.div 
+          className="relative mx-auto max-w-5xl px-4 py-6 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md overflow-hidden"
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+          <div className="overflow-hidden">
+            <div className="flex gap-10 animate-client-scroll whitespace-nowrap">
+              {[...clientData, ...clientData].map(({ img, url }, i) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="inline-block shrink-0">
+                  <img src={img} alt={`Client ${i + 1}`} loading="lazy" className="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-2 border-white/20 hover:border-purple-500 transition-all duration-300" onError={(e) => (e.currentTarget.src = "/placeholder-avatar.png")} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+        <style jsx>{`
+          @keyframes client-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .animate-client-scroll {
+            animation: client-scroll 60s linear infinite;
+          }
+        `}</style>
+      </section>
+
+      {/* SERVICES SECTION */}
+      <section ref={servicesRef} className="relative z-30 py-20 px-6 bg-black text-center">
+        <motion.h2 
+          className="text-4xl font-bold mb-12" 
+          initial={{ opacity: 0, y: 30 }} 
+          animate={servicesInView ? { opacity: 1, y: 0 } : {}} 
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          What I Offer
+        </motion.h2>
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 max-w-6xl mx-auto" 
+          initial={{ opacity: 0, y: 40 }} 
+          animate={servicesInView ? { opacity: 1, y: 0 } : {}} 
+          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+        >
+          {[
+            { label: "Longform Editing", icon: "🎬" },
+            { label: "Shortform Editing", icon: "✂️" },
+            { label: "Thumbnail Design", icon: "🖼️" },
+            { label: "Content Strategy & Ideation", icon: "🧠" },
+          ].map(({ label, icon }, index) => (
+            <motion.div 
+              key={label} 
+              className="backdrop-blur-md bg-white/10 border border-white/20 p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300"
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={servicesInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{ 
+                duration: 0.6, 
+                delay: 0.4 + (index * 0.1), 
+                ease: "easeOut" 
+              }}
+            >
+              <div className="text-4xl mb-4 animate-pulse">{icon}</div>
+              <h3 className="text-xl font-semibold">{label}</h3>
+              <button className="mt-4 px-4 py-2 text-white font-medium rounded-lg bg-purple-600 shadow-lg hover:shadow-purple-400 transition-all duration-300">
+                Learn More
+              </button>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* CONTACT FORM SECTION */}
+      <section className="relative z-30 py-20 px-6 bg-black">
+        <motion.div 
+          className="max-w-4xl mx-auto"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-center mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true }}
+          >
+            Let's Work Together
+          </motion.h2>
+          <motion.p 
+            className="text-xl text-gray-300 text-center mb-12 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+            viewport={{ once: true }}
+          >
+            Ready to take your content to the next level? Tell me about your project and I'll get back to you within 24 hours.
+          </motion.p>
+
+          <ContactForm />
+        </motion.div>
+      </section>
+    </>
+  );
+}
+
+// GlassTagFadeIn component temporarily disabled
