@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { YouTubeVideo, formatViewCount, formatDate } from "../../../lib/youtubeApi";
+import cachedVideos from '../../../public/cole-videos-cache.json';
 
 // Build YouTube thumbnail URLs directly from video ID
 const buildThumbnailUrls = (videoId: string) => ({
@@ -427,12 +428,13 @@ const LazyHeroSection = React.memo(({ clientData }: { clientData: any }) => {
 
 export default function ColeWorkPage() {
   const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
+  const [visibleVideos, setVisibleVideos] = useState<YouTubeVideo[]>([]);
   const [featuredVideo, setFeaturedVideo] = useState<YouTubeVideo | null>(null);
-  const [youtubeLoading, setYoutubeLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [playingVideos, setPlayingVideos] = useState<Set<string>>(new Set());
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
+  const VIDEOS_PER_PAGE = 9;
 
   // Client data
   const clientData = {
@@ -445,70 +447,50 @@ export default function ColeWorkPage() {
     description: "Revolutionary farming and construction content that has captured millions of viewers worldwide."
   };
 
-  // Load initial data
+  // Load cached videos
   useEffect(() => {
-    const loadInitialData = async () => {
-      setYoutubeLoading(true);
-      try {
-        const [featuredResponse, gridResponse] = await Promise.all([
-          fetch('/api/youtube?pageToken=&maxResults=1'),
-          fetch('/api/youtube?pageToken=&maxResults=9') // fetch exactly 9 videos
-        ]);
+    // Map cache to YouTubeVideo type
+    const mappedCache = cachedVideos.map((v: any) => ({
+      id: v.id,
+      title: v.title,
+      description: v.description || '',
+      channelTitle: v.channelTitle || 'Cole The Cornstar',
+      thumbnails: v.thumbnails || { default: { url: '', width: 120, height: 90 } },
+      publishedAt: v.publishedAt,
+      viewCount: v.viewCount || undefined,
+    }));
 
-        if (featuredResponse.ok) {
-          const featuredData = await featuredResponse.json();
-          console.log('Featured data:', featuredData);
-          if (featuredData.videos && featuredData.videos.length > 0) {
-            setFeaturedVideo(featuredData.videos[0]);
-          }
-        }
-
-        if (gridResponse.ok) {
-          const data = await gridResponse.json();
-          const filteredVideos = data.videos || [];
-          console.log('Grid data received:', data);
-          console.log('Videos to set:', filteredVideos.length);
-          console.log('Video IDs from API:', filteredVideos.map(v => v.id));
-          setYoutubeVideos(filteredVideos);
-          setHasMore(data.hasMore || false);
-        } else {
-          console.error('Grid response not ok:', gridResponse.status, gridResponse.statusText);
-        }
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      } finally {
-        setYoutubeLoading(false);
-      }
-    };
-    loadInitialData();
+    // Find the target video and ensure it's shown last
+    const targetVideoId = "YG9S0K4p2tQ";
+    const targetVideo = mappedCache.find(v => v.id === targetVideoId);
+    
+    if (targetVideo) {
+      // Remove target video from its current position
+      const videosWithoutTarget = mappedCache.filter(v => v.id !== targetVideoId);
+      // Add target video to the end
+      const reorderedVideos = [...videosWithoutTarget, targetVideo];
+      
+      setYoutubeVideos(reorderedVideos);
+      setFeaturedVideo(reorderedVideos[0] || null);
+      setVisibleVideos(reorderedVideos.slice(0, VIDEOS_PER_PAGE));
+    } else {
+      setYoutubeVideos(mappedCache);
+      setFeaturedVideo(mappedCache[0] || null);
+      setVisibleVideos(mappedCache.slice(0, VIDEOS_PER_PAGE));
+    }
   }, []);
 
-  const loadMoreVideos = useCallback(async () => {
-    if (youtubeLoading || !hasMore) return;
+  const loadMoreVideos = () => {
+    const nextPage = currentPage + 1;
+    const startIndex = currentPage * VIDEOS_PER_PAGE;
+    const endIndex = startIndex + VIDEOS_PER_PAGE;
+    const moreVideos = youtubeVideos.slice(startIndex, endIndex);
 
-    setYoutubeLoading(true);
-    try {
-      const nextPage = currentPage + 1;
-      const response = await fetch(`/api/youtube?pageToken=page_${nextPage}&maxResults=9`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        const filteredNewVideos = data.videos || [];
-        
-        setTimeout(() => {
-          setYoutubeVideos(prev => [...prev, ...filteredNewVideos]);
-          setHasMore(data.hasMore || false);
-          setCurrentPage(nextPage);
-          setYoutubeLoading(false);
-        }, 100);
-      } else {
-        setYoutubeLoading(false);
-      }
-    } catch (error) {
-      console.error('Error loading more videos:', error);
-      setYoutubeLoading(false);
-    }
-  }, [youtubeLoading, hasMore, currentPage]);
+    setVisibleVideos(prev => [...prev, ...moreVideos]);
+    setCurrentPage(nextPage);
+  };
+
+  const hasMore = visibleVideos.length < youtubeVideos.length;
 
   return (
     <div className="min-h-screen bg-black">
@@ -521,12 +503,12 @@ export default function ColeWorkPage() {
         {featuredVideo && <FeaturedVideo video={featuredVideo} />}
 
         {/* Lazy Loaded Video Grid */}
-        {youtubeVideos.length > 0 && (
+        {visibleVideos.length > 0 && (
           <VideoGrid
-            videos={youtubeVideos}
+            videos={visibleVideos}
             hasMore={hasMore}
             onLoadMore={loadMoreVideos}
-            isLoading={youtubeLoading}
+            isLoading={false}
             excludeVideoId={featuredVideo?.id}
             playingVideos={playingVideos}
             setPlayingVideos={setPlayingVideos}
@@ -535,16 +517,8 @@ export default function ColeWorkPage() {
           />
         )}
 
-        {/* Show loading state for YouTube data */}
-        {youtubeLoading && youtubeVideos.length === 0 && (
-          <div className="text-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-white mx-auto mb-4" />
-            <p className="text-white">Loading videos...</p>
-          </div>
-        )}
-
         {/* Show message if no videos found */}
-        {!youtubeLoading && youtubeVideos.length === 0 && (
+        {visibleVideos.length === 0 && (
           <div className="text-center py-8">
             <p className="text-white">No videos found. Please try again later.</p>
           </div>

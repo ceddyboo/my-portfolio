@@ -69,6 +69,8 @@ export default function HomePage() {
   const [counter, setCounter] = useState(0);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState("Gaming");
 
   // User-provided video files
   const videoSources = [
@@ -92,32 +94,42 @@ export default function HomePage() {
 
   // Helper: fallback poster for videos
   const fallbackPoster = "/placeholder-avatar.png";
+  
 
-  // Recent work data
-  const recentWork = [
-    {
-      channel: "Cole The Cornstar",
-      videoId: "dQw4w9WgXcQ", // Replace with actual video ID
-      title: "Latest Farming Adventure",
-      thumbnail: "/thumbnails/cole-1.jpg"
-    },
-    {
-      channel: "Sambucha",
-      videoId: "dQw4w9WgXcQ", // Replace with actual video ID
-      title: "Gaming Highlights #1",
-      thumbnail: "/thumbnails/cole-2.jpg"
-    },
-    {
-      channel: "MattyBallz",
-      videoId: "dQw4w9WgXcQ", // Replace with actual video ID
-      title: "Music Commentary",
-      thumbnail: "/thumbnails/cole-3.jpg"
-    }
+
+  // Video data for tabbed layout
+  const gamingVideos = [
+    { url: "https://youtu.be/-WLUROvgN_w?si=d_HlRUCMpZCIUJQP", views: "9.3M" },
+    { url: "https://youtu.be/ljls6v5Co3g?si=X8xgQ3wNAnVaQ-Vh", views: "7.1M" },
+    { url: "https://youtu.be/3JmAYUCinA8?si=0vzhn-gnOADxWYM7", views: "8.3M" },
   ];
+
+  const commentaryVideos = [
+    { url: "https://youtu.be/tpTj7CAFudA?si=nU-ILW3bwUOeNBV1", views: "700k" },
+    { url: "https://youtu.be/x5-NESCT7Es?si=HW34NrRK0inrttwz", views: "410k" },
+    { url: "https://youtu.be/j3OveJwcDwQ?si=a4PRC8rN2T-24LLK", views: "350k" },
+  ];
+
+  const farmingVideos = [
+    { url: "https://www.youtube.com/watch?v=_oFEKAl-qgU&t=4170s", views: "490k" },
+    { url: "https://youtu.be/PgCtxMu7zM0?si=RURImZzSaNz9dh5R", views: "742k" },
+    { url: "https://www.youtube.com/watch?v=dhFAU3jMT4M&t=362s", views: "500k" },
+  ];
+
+  const getVideos = () => {
+    if (activeTab === "Gaming") return gamingVideos;
+    if (activeTab === "Commentary") return commentaryVideos;
+    if (activeTab === "Farming") return farmingVideos;
+    return gamingVideos;
+  };
 
   useEffect(() => {
     // Set loaded state immediately for fast initial render
     setIsLoaded(true);
+    
+    // Show hero section immediately
+    console.log('Setting heroLoaded to true');
+    setHeroLoaded(true);
     
     let current = 0;
     const end = 230;
@@ -133,7 +145,9 @@ export default function HomePage() {
       }
     }, 20);
 
-    return () => clearInterval(counter);
+    return () => {
+      clearInterval(counter);
+    };
   }, []);
 
   // Scroll indicator fade out effect
@@ -157,135 +171,141 @@ export default function HomePage() {
         {/* Fallback Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black" />
         
-        {/* Video Wall */}
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Top fade gradient */}
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 via-transparent to-transparent z-10 pointer-events-none" />
-          
-          {/* Bottom fade gradient */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 pointer-events-none" />
-          
-          <div className="h-[200%] w-full animate-video-scroll">
-            {/* First set of videos */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-1 p-1">
-              {videoSources.map((src, i) => (
-                <div key={`first-${i}`} className="w-full aspect-video rounded-lg overflow-hidden bg-gray-800">
-                  <video
-                    src={src}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
-                    className="w-full h-full object-cover"
-                    poster={fallbackPoster}
-                    onError={e => { 
-                      console.log('Video error:', src, e);
-                      e.currentTarget.poster = fallbackPoster; 
-                    }}
-                    onLoadStart={() => console.log('Video loading:', src)}
-                    onCanPlay={() => console.log('Video can play:', src)}
-                  />
-                </div>
-              ))}
-            </div>
-            {/* Duplicate set for seamless scrolling */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-1 p-1">
-              {videoSources.map((src, i) => (
-                <div key={`second-${i}`} className="w-full aspect-video rounded-lg overflow-hidden bg-gray-800">
-                  <video
-                    src={src}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
-                    className="w-full h-full object-cover"
-                    poster={fallbackPoster}
-                    onError={e => { 
-                      console.log('Video error:', src, e);
-                      e.currentTarget.poster = fallbackPoster; 
-                    }}
-                    onLoadStart={() => console.log('Video loading:', src)}
-                    onCanPlay={() => console.log('Video can play:', src)}
-                  />
-                </div>
-              ))}
+        {/* Video Wall - Lazy loaded */}
+        {heroLoaded && (
+          <div className="absolute inset-0 overflow-hidden z-10">
+            <div className="h-[200%] w-full animate-video-scroll">
+              {/* First set of videos */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-1 p-1">
+                {videoSources.map((src, i) => (
+                  <div key={`first-${i}`} className="w-full aspect-video rounded-lg overflow-hidden bg-gray-800">
+                    <video
+                      src={src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="none"
+                      className="w-full h-full object-cover"
+                      poster={fallbackPoster}
+                      onError={e => { 
+                        console.log('Video error:', src, e);
+                        e.currentTarget.poster = fallbackPoster; 
+                      }}
+                      onLoadStart={() => console.log('Video loading:', src)}
+                      onCanPlay={() => console.log('Video can play:', src)}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Duplicate set for seamless scrolling */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-1 p-1">
+                {videoSources.map((src, i) => (
+                  <div key={`second-${i}`} className="w-full aspect-video rounded-lg overflow-hidden bg-gray-800">
+                    <video
+                      src={src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="none"
+                      className="w-full h-full object-cover"
+                      poster={fallbackPoster}
+                      onError={e => { 
+                        console.log('Video error:', src, e);
+                        e.currentTarget.poster = fallbackPoster; 
+                      }}
+                      onLoadStart={() => console.log('Video loading:', src)}
+                      onCanPlay={() => console.log('Video can play:', src)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        )}
+        
+        {/* Dark gradient overlay - fades to black at top and bottom */}
+        <div className="absolute inset-0 pointer-events-none z-5">
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-black/60 to-black" />
         </div>
 
-        {/* Overlay */}
+        {/* Persistent Dark Overlay */}
+        <div className="absolute inset-0 bg-black/80 z-15" />
+        
+        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/85 to-black/95 z-20" />
         
-        {/* Hero Content */}
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-20">
-          {/* Mobile: GlassTag above headline */}
-          <motion.div 
-            className="block md:hidden mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
-            <GlassTag className="relative" />
-          </motion.div>
-          
-          <motion.div 
-            className="relative"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 sm:mb-6 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] tracking-tight leading-tight">
-              CEDRIC GUERRERO 🚀
+        {/* Hero Content - Lazy loaded */}
+        {heroLoaded && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center text-center px-4 sm:px-6 py-20">
+            {/* Mobile: GlassTag above headline */}
+            <motion.div 
+              className="block md:hidden mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <GlassTag className="relative" />
+            </motion.div>
+            
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+                          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 sm:mb-6 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] tracking-tight leading-tight">
+              CEDRIC GUERRERO
             </h1>
-            {/* Desktop: GlassTag positioned over "ERO" */}
-            <div className="hidden md:block">
-              <GlassTag className="absolute top-[-15px] right-0" />
-            </div>
-          </motion.div>
-          
-          <motion.p 
-            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl mb-6 sm:mb-8 text-white/80 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
-            {counter}M+ <span className="text-purple-400">views generated</span>
-          </motion.p>
-          
-          <motion.div 
-            className="cta-container flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full max-w-sm sm:max-w-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
-          >
-            <Link
-              href="/work"
-              className="px-5 py-3 sm:py-2 rounded-xl glassmorphism-button text-gray-200 font-semibold uppercase tracking-wide transition-all duration-300 ease-out transform hover:scale-105 hover:bg-black/40 hover:text-white active:scale-95 mobile-button text-center"
+              {/* Desktop: GlassTag positioned over "ERO" */}
+              <div className="hidden md:block">
+                <GlassTag className="absolute top-[-15px] right-0" />
+              </div>
+            </motion.div>
+            
+            <motion.p 
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl mb-6 sm:mb-8 text-white/80 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
             >
-              Work
-            </Link>
-            <Link
-              href="/contact"
-              className="px-5 py-3 sm:py-2 rounded-xl bg-transparent border border-purple-500 text-white font-semibold uppercase tracking-wide transition-all duration-300 ease-out transform hover:scale-105 hover:bg-purple-600/80 hover:shadow-lg hover:shadow-purple-800/20 active:scale-95 mobile-button text-center"
+              {counter}M+ <span className="text-purple-400">views generated</span>
+            </motion.p>
+            
+            <motion.div 
+              className="cta-container flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full max-w-sm sm:max-w-none"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
             >
-              Get Started
-            </Link>
-          </motion.div>
-          
-          {/* Scroll Indicator */}
-          <motion.div 
-            className={`absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-40 transition-opacity duration-500 ${showScrollIndicator ? 'opacity-100' : 'opacity-0'}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: showScrollIndicator ? 1 : 0, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.6 }}
-          >
-            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-bounce"></div>
-            </div>
-          </motion.div>
-        </div>
+              <Link
+                href="/work"
+                className="px-5 py-3 sm:py-2 rounded-xl glassmorphism-button text-gray-200 font-semibold uppercase tracking-wide transition-all duration-300 ease-out transform hover:scale-105 hover:bg-black/40 hover:text-white active:scale-95 mobile-button text-center"
+              >
+                Work
+              </Link>
+              <Link
+                href="/contact"
+                className="px-5 py-3 sm:py-2 rounded-xl bg-transparent border border-purple-500 text-white font-semibold uppercase tracking-wide transition-all duration-300 ease-out transform hover:scale-105 hover:bg-purple-600/80 hover:shadow-lg hover:shadow-purple-800/20 active:scale-95 mobile-button text-center"
+              >
+                Get Started
+              </Link>
+            </motion.div>
+            
+            {/* Scroll Indicator */}
+            <motion.div 
+              className={`absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-40 transition-opacity duration-500 ${showScrollIndicator ? 'opacity-100' : 'opacity-0'}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: showScrollIndicator ? 1 : 0, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.6 }}
+            >
+              <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
+                <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-bounce"></div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </section>
 
       {/* TESTIMONIALS SECTION */}
@@ -502,47 +522,79 @@ export default function HomePage() {
         >
           Recent Work
         </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
-          {recentWork.map((work, index) => (
-            <motion.div
-              key={work.channel}
-              className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white/5 border border-white/20 backdrop-blur-lg transition-all duration-300 hover:scale-105 hover:bg-white/10 hover:shadow-lg hover:shadow-purple-500/20"
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              viewport={{ once: true, margin: "-50px" }}
+
+        {/* Tabs */}
+        <div className="flex justify-center gap-4 mb-8">
+          {["Gaming", "Commentary", "Farming"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-full text-sm transition ${
+                activeTab === tab
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
             >
-              <div className="relative aspect-video overflow-hidden rounded-t-xl md:rounded-t-2xl">
-                <img
-                  src={work.thumbnail}
-                  alt={work.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center">
-                    <svg className="w-6 sm:w-8 h-6 sm:h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 sm:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-2">{work.title}</h3>
-                <p className="text-purple-400 text-sm font-medium">{work.channel}</p>
-                <a
-                  href={`https://www.youtube.com/watch?v=${work.videoId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-200 mobile-button"
-                >
-                  Watch on YouTube
-                </a>
-              </div>
-            </motion.div>
+              {tab}
+            </button>
           ))}
         </div>
+
+        {/* Video Grid */}
+        <motion.div 
+          key={activeTab}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {getVideos().map((video, index) => (
+            <motion.div
+              key={`${activeTab}-${index}`}
+              className="relative rounded-xl overflow-hidden shadow-lg"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+            >
+              {/* View Count Badge */}
+              <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-xs z-10">
+                {video.views} views
+              </div>
+              {/* YouTube Embed */}
+              <iframe
+                src={(() => {
+                  // Handle different YouTube URL formats
+                  let embedUrl = video.url;
+                  let videoId = '';
+                  
+                  if (embedUrl.includes('youtu.be/')) {
+                    // Handle youtu.be format
+                    videoId = embedUrl.split('youtu.be/')[1].split('?')[0];
+                  } else if (embedUrl.includes('youtube.com/watch?v=')) {
+                    // Handle youtube.com/watch?v= format
+                    videoId = embedUrl.split('watch?v=')[1].split('&')[0];
+                  } else if (embedUrl.includes('youtube.com/embed/')) {
+                    // Already in embed format
+                    videoId = embedUrl.split('embed/')[1].split('?')[0];
+                  }
+                  
+                  // Clean video ID (remove any remaining parameters)
+                  videoId = videoId.split('&')[0].split('?')[0];
+                  
+                  const finalEmbedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  console.log('Original URL:', video.url, 'Video ID:', videoId, 'Embed URL:', finalEmbedUrl);
+                  return finalEmbedUrl;
+                })()}
+                className="w-full aspect-video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                onError={(e) => console.error('Video failed to load:', video.url, e)}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
       {/* CONTACT FORM SECTION */}
