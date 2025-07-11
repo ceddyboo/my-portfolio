@@ -6,9 +6,6 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { YouTubeVideo, formatViewCount, formatDate } from "../../../lib/youtubeApi";
-import { clientDatabase } from "../../../lib/clientData";
-
-const client = clientDatabase.briannaplayz;
 
 // Build YouTube thumbnail URLs directly from video ID
 const buildThumbnailUrls = (videoId: string) => ({
@@ -37,125 +34,57 @@ const getBestThumbnail = (thumbnails: YouTubeVideo['thumbnails']) => {
 
 // Lazy Loaded Featured Video Component
 const FeaturedVideo = React.memo(({ video }: { video: YouTubeVideo | null }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
-    rootMargin: "50px"
+    rootMargin: "100px"
   });
 
-  // Build thumbnail URL from video ID
-  useEffect(() => {
-    if (!video) return;
-    let isMounted = true;
-    
-    // Start with fallback thumbnail
-    setThumbnailUrl("https://placehold.co/480x360/1f2937/ffffff.png?text=Video+Thumbnail");
-    
-    // Try to use API thumbnails as secondary option
-    const apiThumbnail = video.thumbnails?.maxres?.url || video.thumbnails?.high?.url;
-    if (apiThumbnail) {
-      // Test if the YouTube thumbnail loads
-      preloadImage(apiThumbnail).then((ok) => {
-        if (isMounted && ok) {
-          setThumbnailUrl(apiThumbnail);
-        }
-      });
-    }
-    
-    return () => { isMounted = false; };
-  }, [video]);
-
   if (!video) return null;
-
-  const handleVideoClick = () => {
-    setIsPlaying(!isPlaying);
-  };
 
   return (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
       className="mb-12"
     >
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-white">
-        Latest Video
-      </h2>
-      <div className="max-w-2xl mx-auto">
-        <div 
-          className="relative group cursor-pointer rounded-2xl overflow-hidden shadow-2xl bg-black/20 border border-white/10 transition-transform duration-300 hover:scale-[1.02]"
-          onClick={handleVideoClick}
-        >
-          {isPlaying ? (
-            <div className="aspect-video w-full">
-              <iframe
-                src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
+      <motion.h2 
+        initial={{ opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+        className="text-2xl md:text-3xl font-bold mb-6 text-center text-white"
+      >
+        Featured Video
+      </motion.h2>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={inView ? { opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+        className="max-w-2xl mx-auto"
+      >
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black/20 border border-white/10">
+          <div className="aspect-video w-full">
+            {inView && (
+              <motion.iframe
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                src={`https://www.youtube.com/embed/${video.id}?rel=0&modestbranding=1`}
                 title={video.title}
                 className="w-full h-full rounded-2xl"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 loading="lazy"
+                onLoad={() => setIsLoaded(true)}
               />
-            </div>
-          ) : (
-            <div className="relative aspect-video w-full">
-              {/* Loading placeholder */}
-              {!imageLoaded && (
-                <div className="absolute inset-0 bg-gray-800 rounded-2xl flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-white" />
-                </div>
-              )}
-              
-              {thumbnailUrl && (
-                <Image
-                  src={thumbnailUrl}
-                  alt={video.title}
-                  fill
-                  unoptimized
-                  className={`object-cover rounded-2xl transition-opacity duration-500 ${
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  priority
-                  onLoad={() => {
-                    console.log('Featured video thumbnail loaded successfully:', thumbnailUrl);
-                    setImageLoaded(true);
-                  }}
-                  onError={() => {
-                    console.error('Featured video thumbnail failed to load:', thumbnailUrl);
-                    setImageLoaded(true);
-                    // Try fallback thumbnail
-                    setThumbnailUrl("https://placehold.co/480x360/1f2937/ffffff.png?text=Video+Thumbnail");
-                  }}
-                />
-              )}
-              <div className="absolute inset-0 bg-black/30 rounded-2xl" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 group-hover:bg-white/30 transition-all duration-300">
-                  <Play className="w-8 h-8 text-white ml-1" />
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-2xl">
-            <h3 className="text-white font-semibold text-lg mb-2 line-clamp-2">
-              {video.title}
-            </h3>
-            <div className="flex items-center gap-4 text-sm text-gray-300">
-              <span>{formatDate(video.publishedAt)}</span>
-              {video.viewCount && (
-                <span>{formatViewCount(video.viewCount)} views</span>
-              )}
-            </div>
+            )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 });
@@ -166,39 +95,19 @@ const VideoGrid = React.memo(({
   hasMore, 
   onLoadMore, 
   isLoading,
-  excludeVideoId,
-  playingVideos,
-  setPlayingVideos,
-  loadedImages,
-  setLoadedImages
+  excludeVideoId
 }: {
   videos: YouTubeVideo[];
   hasMore: boolean;
   onLoadMore: () => void;
   isLoading: boolean;
   excludeVideoId?: string;
-  playingVideos: Set<string>;
-  setPlayingVideos: React.Dispatch<React.SetStateAction<Set<string>>>;
-  loadedImages: Set<string>;
-  setLoadedImages: React.Dispatch<React.SetStateAction<Set<string>>>;
 }) => {
 
   const filteredVideos = useMemo(() => 
     videos.filter(video => video.id !== excludeVideoId), 
     [videos, excludeVideoId]
   );
-
-  const handleVideoClick = useCallback((videoId: string) => {
-    setPlayingVideos(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(videoId)) {
-        newSet.delete(videoId);
-      } else {
-        newSet.add(videoId);
-      }
-      return newSet;
-    });
-  }, []);
 
   const { ref: loadMoreRef, inView: loadMoreInView } = useInView({
     threshold: 0.1,
@@ -223,14 +132,10 @@ const VideoGrid = React.memo(({
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVideos.map((video, index) => (
-          <VideoCard
+          <LazyVideoCard
             key={video.id}
             video={video}
             index={index}
-            isPlaying={playingVideos.has(video.id)}
-            onVideoClick={() => handleVideoClick(video.id)}
-            loadedImages={loadedImages}
-            setLoadedImages={setLoadedImages}
           />
         ))}
       </div>
@@ -296,16 +201,14 @@ const VideoCard = React.memo(({
     }
     
     return () => { isMounted = false; };
-  }, [inView, video.thumbnails]);
+  }, [video, inView]);
 
   const handleImageLoad = () => {
-    console.log('Video thumbnail loaded successfully:', thumbnailUrl);
     setImageLoaded(true);
     setLoadedImages(prev => new Set([...prev, video.id]));
   };
 
   const handleImageError = () => {
-    console.error('Video thumbnail failed to load:', thumbnailUrl);
     setImageLoaded(true);
     setThumbnailUrl("https://placehold.co/480x360/1f2937/ffffff.png?text=Video+Thumbnail");
   };
@@ -315,31 +218,25 @@ const VideoCard = React.memo(({
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ 
-        duration: 0.5, 
-        delay: index * 0.1, 
-        ease: "easeOut" 
-      }}
-      className="group cursor-pointer"
+      transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+      className="group relative overflow-hidden rounded-xl bg-black/20 border border-white/10 shadow-xl"
     >
       <div 
-        className="relative rounded-xl overflow-hidden shadow-lg bg-black/20 border border-white/10 transition-transform duration-300 hover:scale-[1.02]"
+        className="relative aspect-video cursor-pointer"
         onClick={onVideoClick}
       >
         {isPlaying ? (
-          <div className="aspect-video w-full">
-            <iframe
-              src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
-              title={video.title}
-              className="w-full h-full rounded-xl"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
+          <iframe
+            src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
+            title={video.title}
+            className="w-full h-full rounded-xl"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+          />
         ) : (
-          <div className="relative aspect-video w-full">
+          <>
             {/* Loading placeholder */}
             {!imageLoaded && (
               <div className="absolute inset-0 bg-gray-800 rounded-xl flex items-center justify-center">
@@ -367,22 +264,37 @@ const VideoCard = React.memo(({
                 <Play className="w-6 h-6 text-white ml-0.5" />
               </div>
             </div>
-          </div>
+          </>
         )}
-        
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 rounded-b-xl">
-          <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2">
-            {video.title}
-          </h3>
-          <div className="flex items-center gap-3 text-xs text-gray-300">
-            <span>{formatDate(video.publishedAt)}</span>
-            {video.viewCount && (
-              <span>{formatViewCount(video.viewCount)} views</span>
-            )}
-          </div>
-        </div>
       </div>
     </motion.div>
+  );
+});
+
+// Lazy Video Card Component
+const LazyVideoCard = React.memo(({ 
+  video, 
+  index 
+}: {
+  video: YouTubeVideo;
+  index: number;
+}) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
+  const handleVideoClick = useCallback(() => {
+    setIsPlaying(!isPlaying);
+  }, [isPlaying]);
+
+  return (
+    <VideoCard
+      video={video}
+      index={index}
+      isPlaying={isPlaying}
+      onVideoClick={handleVideoClick}
+      loadedImages={loadedImages}
+      setLoadedImages={setLoadedImages}
+    />
   );
 });
 
@@ -438,112 +350,116 @@ const LazyHeroSection = React.memo(({ clientData }: { clientData: any }) => {
   );
 });
 
-export default function BriannaPlayzPage() {
-  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([]);
-  const [featuredVideo, setFeaturedVideo] = useState<YouTubeVideo | null>(null);
-  const [youtubeLoading, setYoutubeLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [playingVideos, setPlayingVideos] = useState<Set<string>>(new Set());
-  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+export default function BriannaPlayzWorkPage() {
+  // Static video data for BriannaPlayz
+  const staticVideos: YouTubeVideo[] = [
+    {
+      id: "3JmAYUCinA8",
+      title: "BriannaPlayz Video 1",
+      description: "Gaming content from BriannaPlayz",
+      channelTitle: "BriannaPlayz",
+      publishedAt: "2024-01-20T00:00:00Z",
+      viewCount: "2.1M",
+      thumbnails: {
+        default: { url: `https://i.ytimg.com/vi/3JmAYUCinA8/default.jpg`, width: 120, height: 90 },
+        medium: { url: `https://i.ytimg.com/vi/3JmAYUCinA8/mqdefault.jpg`, width: 320, height: 180 },
+        high: { url: `https://i.ytimg.com/vi/3JmAYUCinA8/hqdefault.jpg`, width: 480, height: 360 },
+        maxres: { url: `https://i.ytimg.com/vi/3JmAYUCinA8/maxresdefault.jpg`, width: 1280, height: 720 }
+      }
+    },
+    {
+      id: "6B7gk5DpW58",
+      title: "BriannaPlayz Video 2",
+      description: "Gaming content from BriannaPlayz",
+      channelTitle: "BriannaPlayz",
+      publishedAt: "2024-01-15T00:00:00Z",
+      viewCount: "1.8M",
+      thumbnails: {
+        default: { url: `https://i.ytimg.com/vi/6B7gk5DpW58/default.jpg`, width: 120, height: 90 },
+        medium: { url: `https://i.ytimg.com/vi/6B7gk5DpW58/mqdefault.jpg`, width: 320, height: 180 },
+        high: { url: `https://i.ytimg.com/vi/6B7gk5DpW58/hqdefault.jpg`, width: 480, height: 360 },
+        maxres: { url: `https://i.ytimg.com/vi/6B7gk5DpW58/maxresdefault.jpg`, width: 1280, height: 720 }
+      }
+    },
+    {
+      id: "FDv4RzsEsy4",
+      title: "BriannaPlayz Video 3",
+      description: "Gaming content from BriannaPlayz",
+      channelTitle: "BriannaPlayz",
+      publishedAt: "2024-01-10T00:00:00Z",
+      viewCount: "2.5M",
+      thumbnails: {
+        default: { url: `https://i.ytimg.com/vi/FDv4RzsEsy4/default.jpg`, width: 120, height: 90 },
+        medium: { url: `https://i.ytimg.com/vi/FDv4RzsEsy4/mqdefault.jpg`, width: 320, height: 180 },
+        high: { url: `https://i.ytimg.com/vi/FDv4RzsEsy4/hqdefault.jpg`, width: 480, height: 360 },
+        maxres: { url: `https://i.ytimg.com/vi/FDv4RzsEsy4/maxresdefault.jpg`, width: 1280, height: 720 }
+      }
+    },
+    {
+      id: "IxIc2eZlu2c",
+      title: "BriannaPlayz Video 4",
+      description: "Gaming content from BriannaPlayz",
+      channelTitle: "BriannaPlayz",
+      publishedAt: "2024-01-05T00:00:00Z",
+      viewCount: "1.9M",
+      thumbnails: {
+        default: { url: `https://i.ytimg.com/vi/IxIc2eZlu2c/default.jpg`, width: 120, height: 90 },
+        medium: { url: `https://i.ytimg.com/vi/IxIc2eZlu2c/mqdefault.jpg`, width: 320, height: 180 },
+        high: { url: `https://i.ytimg.com/vi/IxIc2eZlu2c/hqdefault.jpg`, width: 480, height: 360 },
+        maxres: { url: `https://i.ytimg.com/vi/IxIc2eZlu2c/maxresdefault.jpg`, width: 1280, height: 720 }
+      }
+    },
+    {
+      id: "Tbk-r6OJoQw",
+      title: "BriannaPlayz Video 5",
+      description: "Gaming content from BriannaPlayz",
+      channelTitle: "BriannaPlayz",
+      publishedAt: "2023-12-28T00:00:00Z",
+      viewCount: "2.3M",
+      thumbnails: {
+        default: { url: `https://i.ytimg.com/vi/Tbk-r6OJoQw/default.jpg`, width: 120, height: 90 },
+        medium: { url: `https://i.ytimg.com/vi/Tbk-r6OJoQw/mqdefault.jpg`, width: 320, height: 180 },
+        high: { url: `https://i.ytimg.com/vi/Tbk-r6OJoQw/hqdefault.jpg`, width: 480, height: 360 },
+        maxres: { url: `https://i.ytimg.com/vi/Tbk-r6OJoQw/maxresdefault.jpg`, width: 1280, height: 720 }
+      }
+    }
+  ];
 
   // Client data
   const clientData = {
     name: "BriannaPlayz",
-    subscribers: "1.1M",
-    backgroundImage: "/images/default-background.jpg",
+    subscribers: "3.8M",
+    backgroundImage: "/images/briannaplayz.jpg",
     videos: [],
     thumbnails: [],
-    category: "Gaming",
-    description: "Gaming content creator with millions of views and engaged subscribers."
+    category: "Gaming Content",
+    description: "Gaming content creator and streamer with a dedicated community."
   };
 
-  // Load initial data
-  useEffect(() => {
-    const loadInitialData = async () => {
-      setYoutubeLoading(true);
-      try {
-        const [featuredResponse, gridResponse] = await Promise.all([
-          fetch('/api/youtube?pageToken=&maxResults=1'),
-          fetch('/api/youtube?pageToken=&maxResults=10')
-        ]);
-
-        if (featuredResponse.ok) {
-          const featuredData = await featuredResponse.json();
-          if (featuredData.videos && featuredData.videos.length > 0) {
-            setFeaturedVideo(featuredData.videos[0]);
-          }
-        }
-
-        if (gridResponse.ok) {
-          const data = await gridResponse.json();
-          const filteredVideos = data.videos || [];
-          setYoutubeVideos(filteredVideos);
-          setHasMore(data.hasMore || false);
-        }
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      } finally {
-        setYoutubeLoading(false);
-      }
-    };
-    loadInitialData();
-  }, []);
-
-  const loadMoreVideos = useCallback(async () => {
-    if (youtubeLoading || !hasMore) return;
-
-    setYoutubeLoading(true);
-    try {
-      const nextPage = currentPage + 1;
-      const response = await fetch(`/api/youtube?pageToken=page_${nextPage}&maxResults=10`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        const filteredNewVideos = data.videos || [];
-        
-        setTimeout(() => {
-          setYoutubeVideos(prev => [...prev, ...filteredNewVideos]);
-          setHasMore(data.hasMore || false);
-          setCurrentPage(nextPage);
-          setYoutubeLoading(false);
-        }, 100);
-      } else {
-        setYoutubeLoading(false);
-      }
-    } catch (error) {
-      console.error('Error loading more videos:', error);
-      setYoutubeLoading(false);
-    }
-  }, [youtubeLoading, hasMore, currentPage]);
+  // Set featured video as the first video
+  const featuredVideo = staticVideos[0];
+  const gridVideos = staticVideos.slice(1); // All videos except the first one
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="relative w-full h-64 md:h-96">
-        <Image src={client.backgroundImage} alt={client.name} fill className="object-cover opacity-60" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
-          <h1 className="text-4xl md:text-6xl font-bold mb-2 drop-shadow-lg">{client.name}</h1>
-          <p className="text-lg md:text-2xl font-medium mb-4 drop-shadow">{client.category}</p>
-          <p className="max-w-xl text-center text-base md:text-lg opacity-90">{client.description}</p>
-        </div>
-      </div>
-      <div className="max-w-5xl mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold mb-6">Featured Videos</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {client.videos.length ? client.videos.map((video, i) => (
-            <div key={i} className="aspect-video bg-gray-900 rounded-xl overflow-hidden shadow-lg flex items-center justify-center">
-              <iframe
-                src={video}
-                title={`Brianna video ${i+1}`}
-                className="w-full h-full"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-              />
-            </div>
-          )) : <div className="col-span-full text-center text-gray-400">No videos available.</div>}
-        </div>
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto px-4 pt-28 pb-16 md:pt-40 md:pb-20">
+
+        {/* Lazy Loaded Hero Section */}
+        <LazyHeroSection clientData={clientData} />
+
+        {/* Lazy Loaded Featured Video */}
+        {featuredVideo && <FeaturedVideo video={featuredVideo} />}
+
+        {/* Lazy Loaded Video Grid */}
+        {gridVideos.length > 0 && (
+          <VideoGrid
+            videos={gridVideos}
+            hasMore={false}
+            onLoadMore={() => {}}
+            isLoading={false}
+            excludeVideoId={featuredVideo?.id}
+          />
+        )}
       </div>
     </div>
   );

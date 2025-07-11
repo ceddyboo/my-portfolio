@@ -1,3 +1,14 @@
 {
-  "/page": "app/page.js"
+  "/work/page": "app/work/page.js",
+  "/page": "app/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/work/cole/page": "app/work/cole/page.js",
+  "/work/sambucha/page": "app/work/sambucha/page.js",
+  "/work/prestonplayz/page": "app/work/prestonplayz/page.js",
+  "/work/mattyballz/page": "app/work/mattyballz/page.js",
+  "/work/briannaplayz/page": "app/work/briannaplayz/page.js",
+  "/work/stoveskitchen/page": "app/work/stoveskitchen/page.js",
+  "/work/distromike/page": "app/work/distromike/page.js",
+  "/work/ramoakh/page": "app/work/ramoakh/page.js",
+  "/work/lankybox/page": "app/work/lankybox/page.js"
 }

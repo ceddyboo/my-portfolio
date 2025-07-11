@@ -15,7 +15,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header Section */}
-      <section ref={headerRef} className="relative py-16 md:py-20 px-6">
+      <section ref={headerRef} className="relative pt-28 pb-16 md:pt-40 md:pb-20 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

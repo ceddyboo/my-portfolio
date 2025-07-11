@@ -23,7 +23,7 @@ const clients = [
     color: "from-blue-600 to-blue-700",
     views: "25M+ views",
     category: "Gaming",
-    subscribers: 1200000,
+    subscribers: 10000000,
     image: "/images/sambucha-bg.jpg"
   },
   {
@@ -41,8 +41,8 @@ const clients = [
     color: "from-orange-600 to-orange-700",
     views: "15M+ views",
     category: "Gaming",
-    subscribers: 850000,
-    image: "/images/default-background.jpg"
+    subscribers: 17000000,
+    image: "/images/prestonplayz.jpg"
   },
   {
     name: "BriannaPlayz",
@@ -50,8 +50,8 @@ const clients = [
     color: "from-purple-600 to-purple-700",
     views: "20M+ views",
     category: "Gaming",
-    subscribers: 1100000,
-    image: "/images/default-background.jpg"
+    subscribers: 6100000,
+    image: "/images/briannaplayz.jpg"
   },
   {
     name: "DistroMike",
@@ -59,8 +59,8 @@ const clients = [
     color: "from-indigo-600 to-indigo-700",
     views: "35M+ views",
     category: "Educational",
-    subscribers: 2200000,
-    image: "/images/default-background.jpg"
+    subscribers: 9500,
+    image: "/images/distromike.jpg"
   },
   {
     name: "Ramo Akh",
@@ -69,7 +69,7 @@ const clients = [
     views: "18M+ views",
     category: "Gaming",
     subscribers: 950000,
-    image: "/images/default-background.jpg"
+    image: "/images/ramo akh.jpg"
   },
   {
     name: "LankyBox",
@@ -77,8 +77,8 @@ const clients = [
     color: "from-emerald-600 to-emerald-700",
     views: "22M+ views",
     category: "Gaming",
-    subscribers: 1300000,
-    image: "/images/default-background.jpg"
+    subscribers: 41800000,
+    image: "/images/lankybox.jpg"
   },
   {
     name: "Bloveslife",
@@ -86,8 +86,8 @@ const clients = [
     color: "from-teal-600 to-teal-700",
     views: "28M+ views",
     category: "Mukbang",
-    subscribers: 1600000,
-    image: "/images/default-background.jpg"
+    subscribers: 3100000,
+    image: "/images/bloveslife.jpg"
   },
   {
     name: "Stoves Kitchen",
@@ -95,8 +95,8 @@ const clients = [
     color: "from-cyan-600 to-cyan-700",
     views: "12M+ views",
     category: "IRL",
-    subscribers: 750000,
-    image: "/images/default-background.jpg"
+    subscribers: 1500000,
+    image: "/images/stoveskitchen.jpg"
   }
 ];
 

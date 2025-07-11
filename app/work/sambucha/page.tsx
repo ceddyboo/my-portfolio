@@ -540,7 +540,7 @@ export default function SambuchaWorkPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="container mx-auto px-4 py-16 md:py-20">
+      <div className="container mx-auto px-4 pt-28 pb-16 md:pt-40 md:pb-20">
 
         {/* Lazy Loaded Hero Section */}
         <LazyHeroSection clientData={clientData} />

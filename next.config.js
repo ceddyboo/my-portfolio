@@ -10,6 +10,7 @@ const nextConfig = {
     CONTACT_EMAIL: process.env.CONTACT_EMAIL,
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

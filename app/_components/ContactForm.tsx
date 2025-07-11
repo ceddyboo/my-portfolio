@@ -8,7 +8,7 @@ interface ContactFormProps {
 }
 
 // Replace with your Formspree endpoint or another external service
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/yourFormId";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xblynzjo";
 
 export default function ContactForm({ className = "" }: ContactFormProps) {
   const [formData, setFormData] = useState({
@@ -52,7 +52,9 @@ export default function ContactForm({ className = "" }: ContactFormProps) {
         }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+      
+      if (response.ok && data.next) {
         setFeedback({
           type: 'success',
           message: 'Thank you! Your message has been sent successfully. I\'ll get back to you within 24 hours.'
@@ -63,10 +65,15 @@ export default function ContactForm({ className = "" }: ContactFormProps) {
           projectType: "",
           message: ""
         });
+      } else if (data.errors && data.errors.length > 0) {
+        setFeedback({
+          type: 'error',
+          message: data.errors.map(e => e.message).join(' ')
+        });
       } else {
         setFeedback({
           type: 'error',
-          message: 'Something went wrong. Please try again or email me directly.'
+          message: 'Something went wrong. Please email me directly at cedricguerreroL@gmail.com or reach out on X: https://x.com/_cedricguerrero'
         });
       }
     } catch (error) {
@@ -235,6 +242,27 @@ export default function ContactForm({ className = "" }: ContactFormProps) {
             </>
           )}
         </button>
+      </motion.div>
+
+      {/* X Link Subheading */}
+      <motion.div 
+        className="text-center mt-6"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
+        viewport={{ once: true }}
+      >
+        <span className="text-gray-400 text-sm md:text-base">
+          Or reach out directly:{" "}
+          <a 
+            href="https://x.com/_cedricguerrero" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-purple-400 hover:text-purple-300 transition-colors duration-200 font-semibold"
+          >
+            X
+          </a>
+        </span>
       </motion.div>
     </motion.form>
   );

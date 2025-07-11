@@ -71,6 +71,19 @@ export default function HomePage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState("Gaming");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // User-provided video files
   const videoSources = [
@@ -185,7 +198,7 @@ export default function HomePage() {
                       loop
                       muted
                       playsInline
-                      preload="none"
+                      preload={isMobile ? "metadata" : "none"}
                       className="w-full h-full object-cover"
                       poster={fallbackPoster}
                       onError={e => { 
@@ -402,12 +415,13 @@ export default function HomePage() {
               {/* Sambucha Testimonial */}
               <motion.div 
                 className="bg-white/5 border border-white/20 backdrop-blur-lg p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/10 hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true, margin: "-50px" }}
+                whileHover={isMobile ? {} : { scale: 1.05 }}
+                whileTap={isMobile ? {} : { scale: 0.95 }}
+                initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                animate={isMobile ? { opacity: 1, y: 0 } : {}}
+                whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
+                transition={isMobile ? {} : { duration: 0.6, delay: 0.2 }}
+                viewport={isMobile ? {} : { once: true, margin: "-50px" }}
                 onClick={() => window.open('/work/sambucha', '_blank')}
               >
                 {/* Profile Header */}
@@ -430,12 +444,13 @@ export default function HomePage() {
               {/* Ramo Akh Testimonial */}
               <motion.div 
                 className="bg-white/5 border border-white/20 backdrop-blur-lg p-4 rounded-xl transition-all duration-300 hover:scale-105 hover:bg-white/10 hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                viewport={{ once: true, margin: "-50px" }}
+                whileHover={isMobile ? {} : { scale: 1.05 }}
+                whileTap={isMobile ? {} : { scale: 0.95 }}
+                initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                animate={isMobile ? { opacity: 1, y: 0 } : {}}
+                whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
+                transition={isMobile ? {} : { duration: 0.6, delay: 0.3 }}
+                viewport={isMobile ? {} : { once: true, margin: "-50px" }}
                 onClick={() => window.open('/work/ramoakh', '_blank')}
               >
                 {/* Profile Header */}
@@ -463,10 +478,11 @@ export default function HomePage() {
       <section className="relative z-30 py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-black text-center">
         <motion.h2 
           className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-12 text-white"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          viewport={{ once: true, margin: "-50px" }}
+          initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          animate={isMobile ? { opacity: 1, y: 0 } : {}}
+          whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
+          transition={isMobile ? {} : { duration: 0.4 }}
+          viewport={isMobile ? {} : { once: true, margin: "-50px" }}
         >
           Services
         </motion.h2>
@@ -496,12 +512,13 @@ export default function HomePage() {
             <motion.div 
               key={label} 
               className="backdrop-blur-md bg-white/10 border border-white/20 p-4 sm:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all duration-300 hover:bg-white/15 hover:shadow-xl hover:shadow-purple-500/20"
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              viewport={{ once: true, margin: "-50px" }}
+              whileHover={isMobile ? {} : { scale: 1.05, y: -5 }}
+              whileTap={isMobile ? {} : { scale: 0.95 }}
+              initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              animate={isMobile ? { opacity: 1, y: 0 } : {}}
+              whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
+              transition={isMobile ? {} : { duration: 0.4, delay: index * 0.1 }}
+              viewport={isMobile ? {} : { once: true, margin: "-50px" }}
             >
               <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{icon}</div>
               <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 sm:mb-3">{label}</h3>
@@ -515,10 +532,11 @@ export default function HomePage() {
       <section className="relative z-30 py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-black text-center">
         <motion.h2 
           className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-12 text-white"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          viewport={{ once: true, margin: "-50px" }}
+          initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          animate={isMobile ? { opacity: 1, y: 0 } : {}}
+          whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
+          transition={isMobile ? {} : { duration: 0.4 }}
+          viewport={isMobile ? {} : { once: true, margin: "-50px" }}
         >
           Recent Work
         </motion.h2>
@@ -553,9 +571,9 @@ export default function HomePage() {
             <motion.div
               key={`${activeTab}-${index}`}
               className="relative rounded-xl overflow-hidden shadow-lg"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
+              initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              animate={isMobile ? { opacity: 1, y: 0 } : {}}
+              transition={isMobile ? {} : { duration: 0.4, delay: index * 0.1 }}
             >
               {/* View Count Badge */}
               <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-xs z-10">
@@ -602,10 +620,11 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           <motion.div
             className="text-center mb-8 sm:mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true, margin: "-50px" }}
+            initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            animate={isMobile ? { opacity: 1, y: 0 } : {}}
+            whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
+            transition={isMobile ? {} : { duration: 0.4 }}
+            viewport={isMobile ? {} : { once: true, margin: "-50px" }}
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-white">
               Ready to Get Started?

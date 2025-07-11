@@ -62,8 +62,20 @@ export const clientDatabase: Record<string, ClientData> = {
     name: "Brianna Playz",
     subscribers: "3.8M",
     backgroundImage: "/images/default-background.jpg",
-    videos: [],
-    thumbnails: [],
+    videos: [
+      "https://www.youtube.com/embed/3JmAYUCinA8",
+      "https://www.youtube.com/embed/6B7gk5DpW58",
+      "https://www.youtube.com/embed/FDv4RzsEsy4",
+      "https://www.youtube.com/embed/IxIc2eZlu2c",
+      "https://www.youtube.com/embed/Tbk-r6OJoQw"
+    ],
+    thumbnails: [
+      "https://i.ytimg.com/vi/3JmAYUCinA8/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/6B7gk5DpW58/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/FDv4RzsEsy4/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/IxIc2eZlu2c/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/Tbk-r6OJoQw/maxresdefault.jpg"
+    ],
     category: "Gaming Content",
     description: "Gaming content creator and streamer with a dedicated community."
   },
